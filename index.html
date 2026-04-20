@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AMULIO - AI Assistant</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            transition: all 0.3s ease;
+            overflow-x: hidden;
+        }
+
+        body.light-mode {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #1a202c;
+        }
+
+        body.dark-mode {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: #f1f5f9;
+        }
+
+        /* Animated Background */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+
+        .particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        @keyframes float {
+            0%, 100% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(50px);
+                opacity: 0;
+            }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            width: 100%;
+            padding: 20px 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        body.dark-mode nav {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .logo {
+            font-size: 32px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo i {
+            color: white;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+            align-items: center;
+        }
+
+        .nav-links a {
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .nav-links a {
+            color: white;
+        }
+
+        body.dark-mode .nav-links a {
+            color: #f1f5f9;
+        }
+
+        .nav-links a:hover {
+            color: #f093fb;
+            transform: translateY(-2px);
+        }
+
+        .theme-toggle {
+            width: 70px;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            position: relative;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.5);
+            transition: all 0.3s;
+        }
+
+        body.dark-mode .theme-toggle {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .theme-ball {
+            width: 31px;
+            height: 31px;
+            background: white;
+            border-radius: 50%;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        body.dark-mode .theme-ball {
+            transform: translateX(35px);
+        }
+
+        .theme-ball i {
+            font-size: 16px;
+        }
+
+        /* Main Chat Container */
+        .chat-container {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 0 5%;
+            min-height: calc(100vh - 150px);
+        }
+
+        .welcome-section {
+            text-align: center;
+            padding: 60px 20px;
+            animation: fadeIn 1s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-section h1 {
+            font-size: 64px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .welcome-section p {
+            font-size: 24px;
+            margin-bottom: 40px;
+        }
+
+        body.light-mode .welcome-section p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.dark-mode .welcome-section p {
+            color: #cbd5e1;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        body.light-mode .feature-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .feature-card {
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-card i {
+            font-size: 48px;
+            margin-bottom: 15px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .feature-card h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        body.light-mode .feature-card h3 {
+            color: white;
+        }
+
+        body.dark-mode .feature-card h3 {
+            color: #f1f5f9;
+        }
+
+        .feature-card p {
+            font-size: 14px;
+        }
+
+        body.light-mode .feature-card p {
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        body.dark-mode .feature-card p {
+            color: #94a3b8;
+        }
+
+        /* Chat Messages */
+        .chat-messages {
+            max-height: 60vh;
+            overflow-y: auto;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .chat-messages.active {
+            display: block;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message-content {
+            display: inline-block;
+            padding: 15px 20px;
+            border-radius: 20px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-bottom-right-radius: 5px;
+        }
+
+        .message.ai .message-content {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border-bottom-left-radius: 5px;
+        }
+
+        body.dark-mode .message.ai .message-content {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        body.light-mode .message.ai .message-content {
+            color: #1a202c;
+        }
+
+        body.dark-mode .message.ai .message-content {
+            color: #f1f5f9;
+        }
+
+        .message-header {
+            font-size: 12px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        body.light-mode .message-header {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        body.dark-mode .message-header {
+            color: #94a3b8;
+        }
+
+        /* Chat Input */
+        .chat-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 5%;
+            backdrop-filter: blur(20px);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .chat-input-container {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .chat-input-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .chat-input {
+            flex: 1;
+            padding: 18px 25px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50px;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .chat-input {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+        }
+
+        body.dark-mode .chat-input {
+            background: rgba(15, 23, 42, 0.8);
+            color: #f1f5f9;
+            border-color: #334155;
+        }
+
+        .chat-input::placeholder {
+            color: rgba(255, 255, 255, 0.6);
+        }
+
+        .chat-input:focus {
+            border-color: #f093fb;
+            box-shadow: 0 0 20px rgba(240, 147, 251, 0.3);
+        }
+
+        .send-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .send-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 10px 30px rgba(240, 147, 251, 0.5);
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            padding: 15px 20px;
+            border-radius: 20px;
+            width: fit-content;
+            margin-bottom: 20px;
+        }
+
+        body.light-mode .typing-indicator {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .typing-indicator {
+            background: rgba(30, 41, 59, 0.8);
+        }
+
+        .typing-indicator.active {
+            display: block;
+        }
+
+        .dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #667eea;
+            margin: 0 3px;
+            animation: typing 1.4s infinite;
+        }
+
+        .dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+            }
+            30% {
+                transform: translateY(-10px);
+            }
+        }
+
+        /* About Section */
+        .about-section {
+            max-width: 1200px;
+            margin: 100px auto 50px;
+            padding: 60px 5%;
+            border-radius: 30px;
+        }
+      
+        body.light-mode .about-section {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        body.dark-mode .about-section {
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        .about-section h2 {
+            font-size: 48px;
+            margin-bottom: 30px;
+            text-align: center;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .about-content {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 30px;
+        }
+
+        body.light-mode .about-content {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.dark-mode .about-content {
+            color: #cbd5e1;
+        }
+
+        .developer-info {
+            padding: 40px;
+            border-radius: 20px;
+            margin-top: 40px;
+        }
+
+        body.light-mode .developer-info {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        body.dark-mode .developer-info {
+            background: rgba(15, 23, 42, 0.6);
+        }
+
+        .developer-info h3 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            color: #f093fb;
+        }
+
+        .developer-info p {
+            font-size: 18px;
+            line-height: 1.8;
+            margin-bottom: 15px;
+        }
+
+        body.light-mode .developer-info p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.dark-mode .developer-info p {
+            color: #cbd5e1;
+        }
+
+        /* Contact Section */
+        .contact-section {
+            max-width: 1200px;
+            margin: 50px auto;
+            padding: 60px 5%;
+            text-align: center;
+        }
+
+        .contact-section h2 {
+            font-size: 48px;
+            margin-bottom: 40px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .contact-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-top: 40px;
+        }
+
+        .contact-card {
+            padding: 40px;
+            border-radius: 20px;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .contact-card {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .contact-card {
+            background: rgba(30, 41, 59, 0.6);
+        }
+
+        .contact-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .contact-card i {
+            font-size: 48px;
+            margin-bottom: 20px;
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .contact-card h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        body.light-mode .contact-card h3 {
+            color: white;
+        }
+
+        body.dark-mode .contact-card h3 {
+            color: #f1f5f9;
+        }
+
+        .contact-card a {
+            font-size: 18px;
+            text-decoration: none;
+            transition: all 0.3s;
+        }
+
+        body.light-mode .contact-card a {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.dark-mode .contact-card a {
+            color: #cbd5e1;
+        }
+
+        .contact-card a:hover {
+            color: #f093fb;
+        }
+
+        /* Footer */
+        footer {
+            padding: 40px 5%;
+            text-align: center;
+            margin-top: 100px;
+        }
+
+        body.light-mode footer {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode footer {
+            background: rgba(15, 23, 42, 0.5);
+        }
+
+        footer p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        body.light-mode footer p {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        body.dark-mode footer p {
+            color: #cbd5e1;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 10px;
+        }
+
+        /* Mobile Menu */
+        .mobile-menu {
+            display: none;
+            font-size: 28px;
+            cursor: pointer;
+        }
+
+        body.light-mode .mobile-menu {
+            color: white;
+        }
+
+        body.dark-mode .mobile-menu {
+            color: #f1f5f9;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .logo {
+                font-size: 24px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .mobile-menu {
+                display: block;
+            }
+
+            .welcome-section h1 {
+                font-size: 42px;
+            }
+
+            .welcome-section p {
+                font-size: 18px;
+            }
+
+            .message-content {
+                max-width: 85%;
+            }
+
+            .about-section h2,
+            .contact-section h2 {
+                font-size: 36px;
+            }
+        }
+    </style>
+</head>
+<body class="light-mode">
+    <!-- Animated Background -->
+    <div class="particles" id="particles"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <div class="logo">
+            <i class="fas fa-robot"></i>
+            AMULIO
+        </div>
+        <div class="mobile-menu">
+            <i class="fas fa-bars"></i>
+        </div>
+        <ul class="nav-links">
+            <li><a href="#home" onclick="showHome()">Home</a></li>
+            <li><a href="#about" onclick="showAbout()">About</a></li>
+            <li><a href="#contact" onclick="showContact()">Contact</a></li>
+            <li>
+                <div class="theme-toggle" onclick="toggleTheme()">
+                    <div class="theme-ball">
+                        <i class="fas fa-sun" style="color: #f59e0b;"></i>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </nav>
+
+    <!-- Main Chat Container -->
+    <div class="chat-container" id="chatContainer">
+        <!-- Welcome Section -->
+        <div class="welcome-section" id="welcomeSection">
+            <h1>Welcome to AMULIO</h1>
+            <p>Your Intelligent AI Assistant - Ask Me Anything!</p>
+            
+            <div class="features-grid">
+                <div class="feature-card">
+                    <i class="fas fa-brain"></i>
+                    <h3>Smart Answers</h3>
+                    <p>Get intelligent responses to all your questions</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-clock"></i>
+                    <h3>24/7 Available</h3>
+                    <p>Always ready to help you anytime</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-shield-alt"></i>
+                    <h3>Secure</h3>
+                    <p>Protected with advanced security measures</p>
+                </div>
+                <div class="feature-card">
+                    <i class="fas fa-bolt"></i>
+                    <h3>Fast Response</h3>
+                    <p>Instant answers to your queries</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chatMessages"></div>
+        
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typingIndicator">
+            <div class="dot"></div>
+            <div class="dot"></div>
+            <div class="dot"></div>
+        </div>
+    </div>
+
+    <!-- About Section -->
+    <div class="about-section" id="aboutSection" style="display: none;">
+        <h2>About AMULIO AI</h2>
+        <div class="about-content">
+            <p>
+                AMULIO is an advanced AI-powered question answering system designed to provide accurate, 
+                helpful, and intelligent responses to any question you may have. Whether you're looking 
+                for information, solving problems, or seeking guidance, AMULIO is here to assist you.
+            </p>
+            <p>
+                Built with cutting-edge technology and a comprehensive knowledge base, AMULIO can handle 
+                questions across various domains including science, technology, mathematics, history, 
+                general knowledge, and much more. The AI continuously learns and adapts to provide you 
+                with the most relevant and accurate information.
+            </p>
+            <p>
+                Key Features:
+            </p>
+            <ul style="padding-left: 40px; margin-top: 15px;">
+                <li>Natural language understanding</li>
+                <li>Context-aware responses</li>
+                <li>Multi-domain knowledge base</li>
+                <li>Secure and private conversations</li>
+                <li>Fast and reliable performance</li>
+                <li>User-friendly interface</li>
+            </ul>
+        </div>
+
+        <div class="developer-info">
+            <h3>Designed & Developed By</h3>
+            <p><strong>Mohammad Haris</strong></p>
+            <p>Class 12th Student</p>
+            <p>Saiyyed Hamid Senior Secondary School (SHSSS)</p>
+            <p>Aligarh Muslim University (AMU), Aligarh</p>
+            <p>From: AMILO, Mubarak Pur, Azamgarh</p>
+            <p style="margin-top: 20px;">
+                This AI assistant was created as a project to demonstrate the power of artificial 
+                intelligence and natural language processing. It combines modern web technologies 
+                with intelligent algorithms to create a seamless and helpful user experience.
+            </p>
+        </div>
+    </div>
+
+    <!-- Contact Section -->
+    <div class="contact-section" id="contactSection" style="display: none;">
+        <h2>Get In Touch</h2>
+        <p style="font-size: 18px; margin-bottom: 40px; opacity: 0.9;">
+            Have questions or feedback? Feel free to reach out to the developer!
+        </p>
+
+        <div class="contact-cards">
+            <div class="contact-card">
+                <i class="fas fa-envelope"></i>
+                <h3>Email</h3>
+                <a href="mailto:Mohammadhaaris991@gmail.com">Mohammadhaaris991@gmail.com</a>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-phone"></i>
+                <h3>Phone</h3>
+                <a href="tel:+918077097290">+91 8077097290</a>
+            </div>
+            <div class="contact-card">
+                <i class="fas fa-map-marker-alt"></i>
+                <h3>Location</h3>
+                <p style="margin-top: 10px;">AMILO, Mubarak Pur<br>Azamgarh, Uttar Pradesh<br>India</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <div class="chat-input-wrapper">
+            <input 
+                type="text" 
+                class="chat-input" 
+                id="chatInput" 
+                placeholder="Ask me anything..."
+                onkeypress="if(event.key === 'Enter') sendMessage()"
+            >
+            <button class="send-btn" onclick="sendMessage()">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>Designed & Developed with ❤️ by Mohammad Haris</p>
+        <p>Class 12th, SHSSS, AMU Aligarh | From AMILO, Mubarak Pur, Azamgarh</p>
+        <p>&copy; 2025 AMULIO AI. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        // Create particles
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.animationDelay = Math.random() * 20 + 's';
+                particle.style.animationDuration = (Math.random() * 15 + 15) + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Theme Toggle
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.querySelector('.theme-ball i');
+            
+            if (body.classList.contains('light-mode')) {
+                body.classList.remove('light-mode');
+                body.classList.add('dark-mode');
+                icon.className = 'fas fa-moon';
+                icon.style.color = '#6366f1';
+            } else {
+                body.classList.remove('dark-mode');
+                body.classList.add('light-mode');
+                icon.className = 'fas fa-sun';
+                icon.style.color = '#f59e0b';
+            }
+        }
+
+        // Navigation
+        function showHome() {
+            document.getElementById('chatContainer').style.display = 'block';
+            document.getElementById('aboutSection').style.display = 'none';
+            document.getElementById('contactSection').style.display = 'none';
+        }
+
+        function showAbout() {
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('aboutSection').style.display = 'block';
+            document.getElementById('contactSection').style.display = 'none';
+        }
+
+        function showContact() {
+            document.getElementById('chatContainer').style.display = 'none';
+            document.getElementById('aboutSection').style.display = 'none';
+            document.getElementById('contactSection').style.display = 'block';
+        }
+
+        // AI Knowledge Base
+        const knowledgeBase = {
+            // Greetings
+            'hello': 'Hello! I am AMULIO, your AI assistant. How can I help you today?',
+            'hi': 'Hi there! I am AMULIO. Ask me anything you want to know!',
+            'hey': 'Hey! Welcome to AMULIO. What would you like to know?',
+            'good morning': 'Good morning! How can I assist you today?',
+            'good afternoon': 'Good afternoon! What can I help you with?',
+            'good evening': 'Good evening! How may I assist you?',
+
+            // About AMULIO
+            'what is amulio': 'AMULIO is an intelligent AI assistant designed to answer your questions accurately. I can help you with various topics including science, math, history, and general knowledge.',
+            'who created you': 'I was designed and developed by Mohammad Haris, a Class 12th student from Saiyyed Hamid Senior Secondary School, AMU Aligarh.',
+            'who made you': 'I was created by Mohammad Haris, a talented student from AMU Aligarh with a passion for AI and technology.',
+
+            // Science
+            'what is science': 'Science is a systematic study of the natural world through observation and experimentation. It helps us understand how things work.',
+            'what is physics': 'Physics is the study of matter, energy, and their interactions. It explores fundamental laws governing the universe.',
+            'what is chemistry': 'Chemistry is the science that deals with the composition, structure, and properties of substances and their transformations.',
+            'what is biology': 'Biology is the study of living organisms, their structure, function, growth, and evolution.',
+            'speed of light': 'The speed of light in vacuum is approximately 299,792,458 meters per second (about 300,000 km/s).',
+            'what is gravity': 'Gravity is a force that attracts objects with mass toward each other. On Earth, it gives weight to physical objects.',
+
+            // Mathematics
+            'what is mathematics': 'Mathematics is the study of numbers, quantities, shapes, and patterns using logical reasoning.',
+            'what is algebra': 'Algebra is a branch of mathematics dealing with symbols and rules for manipulating those symbols.',
+            'what is calculus': 'Calculus is a branch of mathematics focused on rates of change (differentiation) and accumulation of quantities (integration).',
+            'what is pi': 'Pi (π) is a mathematical constant approximately equal to 3.14159. It represents the ratio of a circle\'s circumference to its diameter.',
+
+            // Technology
+            'what is ai': 'Artificial Intelligence (AI) is the simulation of human intelligence in machines programmed to think and learn like humans.',
+            'what is machine learning': 'Machine Learning is a subset of AI that enables systems to learn and improve from experience without being explicitly programmed.',
+            'what is programming': 'Programming is the process of creating instructions for computers to execute specific tasks using programming languages.',
+            'what is internet': 'The Internet is a global network of interconnected computers that communicate using standardized protocols.',
+
+            // History
+            'who was einstein': 'Albert Einstein was a theoretical physicist who developed the theory of relativity and made significant contributions to quantum mechanics.',
+            'who was newton': 'Isaac Newton was an English mathematician and physicist who formulated the laws of motion and universal gravitation.',
+            'what is history': 'History is the study of past events, particularly human activities, societies, and civilizations.',
+
+            // General Knowledge
+            'what is earth': 'Earth is the third planet from the Sun and the only known planet to harbor life. It has one natural satellite, the Moon.',
+            'how many planets': 'There are 8 planets in our solar system: Mercury, Venus, Earth, Mars, Jupiter, Saturn, Uranus, and Neptune.',
+            'what is water': 'Water is a transparent, tasteless, odorless chemical substance with the formula H2O. It is essential for all known forms of life.',
+            'what is photosynthesis': 'Photosynthesis is the process by which plants use sunlight, water, and carbon dioxide to produce oxygen and energy in the form of sugar.',
+
+            // Time & Date
+            'what is time': 'Time is the indefinite continued progress of existence and events in the past, present, and future.',
+            'what day is today': 'I don\'t have access to real-time data, but you can check your device\'s calendar for today\'s date.',
+
+            // Help
+            'help': 'I can answer questions about science, mathematics, technology, history, and general knowledge. Just ask me anything!',
+            'what can you do': 'I can answer your questions on various topics, provide information, solve problems, and help you learn new things!',
+
+            // Default responses for unknown questions
+            'default': 'That\'s an interesting question! While I may not have a specific answer right now, I recommend checking reliable sources or asking me related questions. I\'m constantly learning!'
+        };
+        
+        // Send Message
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+
+            if (!message) return;
+
+            // Hide welcome section and show chat
+            document.getElementById('welcomeSection').style.display = 'none';
+            document.getElementById('chatMessages').classList.add('active');
+
+            // Add user message
+            addMessage(message, 'user');
+            input.value = '';
+
+            // Show typing indicator
+            document.getElementById('typingIndicator').classList.add('active');
+
+            // Get AI response
+            setTimeout(() => {
+                const response = getAIResponse(message);
+                document.getElementById('typingIndicator').classList.remove('active');
+                addMessage(response, 'ai');
+            }, 1000 + Math.random() * 1000);
+        }
+
+        // Add Message
+        function addMessage(text, type) {
+            const messagesContainer = document.getElementById('chatMessages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${type}`;
+
+            const header = document.createElement('div');
+            header.className = 'message-header';
+            header.textContent = type === 'user' ? 'You' : 'AMULIO';
+
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            content.textContent = text;
+
+            messageDiv.appendChild(header);
+            messageDiv.appendChild(content);
+            messagesContainer.appendChild(messageDiv);
+
+            // Scroll to bottom
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Get AI Response
+        function getAIResponse(question) {
+            const q = question.toLowerCase().trim();
+
+            // Check exact matches
+            if (knowledgeBase[q]) {
+                return knowledgeBase[q];
+            }
+
+            // Check partial matches
+            for (let key in knowledgeBase) {
+                if (q.includes(key) || key.includes(q)) {
+                    return knowledgeBase[key];
+                }
+            }
+
+            // Math operations
+            if (q.includes('+') || q.includes('-') || q.includes('*') || q.includes('/')) {
+                try {
+                    const result = eval(q.replace(/[^0-9+\-*/().]/g, ''));
+                    return `The answer is: ${result}`;
+                } catch (e) {
+                    return 'I couldn\'t calculate that. Please check your expression.';
+                }
+            }
+
+            // Default response
+            return knowledgeBase['default'];
+        }
+
+        // Security: Prevent XSS and injection attacks
+        document.getElementById('chatInput').addEventListener('input', function(e) {
+            // Remove potential harmful characters
+            this.value = this.value.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+        });
+
+        // Prevent right-click (basic protection)
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // Prevent F12 and other developer tools shortcuts
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+            }
+        });
+    </script>
+</body>
+</html>
